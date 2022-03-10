@@ -185,10 +185,10 @@ godot_bool GDAPI godot_array_empty(const godot_array *p_self) {
 	return self->empty();
 }
 
-void GDAPI godot_array_erase(godot_array *p_self, const godot_variant *p_value) {
+godot_bool GDAPI godot_array_erase(godot_array *p_self, const godot_variant *p_value) {
 	Array *self = (Array *)p_self;
 	const Variant *val = (const Variant *)p_value;
-	self->erase(*val);
+	return self->erase(*val);
 }
 
 godot_variant GDAPI godot_array_front(const godot_array *p_self) {

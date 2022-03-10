@@ -3080,7 +3080,7 @@
       },
       {
         "name": "godot_array_erase",
-        "return_type": "void",
+        "return_type": "godot_bool",
         "arguments": [
           ["godot_array *", "p_self"],
           ["const godot_variant *", "p_value"]

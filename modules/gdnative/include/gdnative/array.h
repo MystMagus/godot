@@ -86,7 +86,7 @@ godot_int GDAPI godot_array_count(const godot_array *p_self, const godot_variant
 
 godot_bool GDAPI godot_array_empty(const godot_array *p_self);
 
-void GDAPI godot_array_erase(godot_array *p_self, const godot_variant *p_value);
+godot_bool GDAPI godot_array_erase(godot_array *p_self, const godot_variant *p_value);
 
 godot_variant GDAPI godot_array_front(const godot_array *p_self);
 
