@@ -421,6 +421,7 @@ public:
 
 	virtual bool is_pressed() const;
 
+	virtual bool is_echo() const;
 	virtual bool action_match(const Ref<InputEvent> &p_event, bool *p_pressed, float *p_strength, float *p_raw_strength, float p_deadzone) const;
 	virtual bool shortcut_match(const Ref<InputEvent> &p_event, bool p_exact_match = true) const;
 
