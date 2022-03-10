@@ -405,6 +405,7 @@ class InputEventJoypadMotion : public InputEvent {
 	GDCLASS(InputEventJoypadMotion, InputEvent);
 	int axis; ///< Joypad axis
 	float axis_value; ///< -1 to 1
+	float axis_last_value; ///< -1 to 1
 
 protected:
 	static void _bind_methods();
@@ -415,9 +416,12 @@ public:
 
 	void set_axis_value(float p_value);
 	float get_axis_value() const;
+	void set_axis_last_value(float p_value);
+	float get_axis_last_value() const;
 
 	virtual bool is_pressed() const;
 
+	virtual bool is_echo() const;
 	virtual bool action_match(const Ref<InputEvent> &p_event, bool *p_pressed, float *p_strength, float *p_raw_strength, float p_deadzone) const;
 	virtual bool shortcut_match(const Ref<InputEvent> &p_event, bool p_exact_match = true) const;
 
