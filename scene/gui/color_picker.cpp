@@ -1901,14 +1901,30 @@ void ColorPickerButton::pressed() {
 void ColorPickerButton::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_DRAW: {
+			Ref<StyleBox> stylebox;
+			Color draw_color = color;
+			switch (get_draw_mode()) {
+				case DRAW_DISABLED: {
+
+					stylebox = get_theme_stylebox(SNAME("disabled"));
+					float gray = color.get_v() * 0.5f;
+					draw_color = Color(gray, gray, gray, color.a);
+				} break;
+				case DRAW_NORMAL:
+				default: {
+
+					stylebox = get_theme_stylebox(SNAME("normal"));
+				} break;
+			}
+
 			const Ref<StyleBox> normal = get_theme_stylebox(SNAME("normal"));
 			const Rect2 r = Rect2(normal->get_offset(), get_size() - normal->get_minimum_size());
 			draw_texture_rect(Control::get_theme_icon(SNAME("bg"), SNAME("ColorPickerButton")), r, true);
-			draw_rect(r, color);
+			draw_rect(r, draw_color);
 
-			if (color.r > 1 || color.g > 1 || color.b > 1) {
+			if (draw_color.r > 1 || draw_color.g > 1 || draw_color.b > 1) {
 				// Draw an indicator to denote that the color is "overbright" and can't be displayed accurately in the preview
-				draw_texture(Control::get_theme_icon(SNAME("overbright_indicator"), SNAME("ColorPicker")), normal->get_offset());
+				draw_texture(Control::get_theme_icon(SNAME("overbright_indicator"), SNAME("ColorPicker")), stylebox->get_offset());
 			}
 		} break;
 
