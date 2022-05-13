@@ -44,6 +44,7 @@ class OptionButton : public Button {
 	void _selected(int p_which);
 	void _select(int p_which, bool p_emit = false);
 	void _select_int(int p_which);
+	void _select_id(int p_which);
 
 	Array _get_items() const;
 	void _set_items(const Array &p_items);
@@ -79,6 +80,7 @@ public:
 	void clear();
 
 	void select(int p_idx);
+	void select_by_id(int p_id);
 	int get_selected() const;
 	int get_selected_id() const;
 	Variant get_selected_metadata() const;
