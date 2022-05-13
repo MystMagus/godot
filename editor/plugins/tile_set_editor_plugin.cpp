@@ -271,6 +271,7 @@ void TileSetEditor::_bind_methods() {
 	ClassDB::bind_method("_on_workspace_draw", &TileSetEditor::_on_workspace_draw);
 	ClassDB::bind_method("_on_workspace_input", &TileSetEditor::_on_workspace_input);
 	ClassDB::bind_method("_on_tool_clicked", &TileSetEditor::_on_tool_clicked);
+	ClassDB::bind_method("_on_bitmask_transform_changed", &TileSetEditor::_on_bitmask_transform_changed);
 	ClassDB::bind_method("_on_priority_changed", &TileSetEditor::_on_priority_changed);
 	ClassDB::bind_method("_on_z_index_changed", &TileSetEditor::_on_z_index_changed);
 	ClassDB::bind_method("_on_grid_snap_toggled", &TileSetEditor::_on_grid_snap_toggled);
@@ -336,6 +337,7 @@ void TileSetEditor::_notification(int p_what) {
 			tool_editmode[EDITMODE_OCCLUSION]->set_icon(get_icon("LightOccluder2D", "EditorIcons"));
 			tool_editmode[EDITMODE_NAVIGATION]->set_icon(get_icon("Navigation2D", "EditorIcons"));
 			tool_editmode[EDITMODE_BITMASK]->set_icon(get_icon("PackedDataContainer", "EditorIcons"));
+			tool_editmode[EDITMODE_BITMASK_TRANSFORM]->set_icon(get_icon("PackedDataContainer", "EditorIcons"));
 			tool_editmode[EDITMODE_PRIORITY]->set_icon(get_icon("MaterialPreviewLight1", "EditorIcons"));
 			tool_editmode[EDITMODE_ICON]->set_icon(get_icon("LargeTexture", "EditorIcons"));
 			tool_editmode[EDITMODE_Z_INDEX]->set_icon(get_icon("Sort", "EditorIcons"));
@@ -457,6 +459,7 @@ TileSetEditor::TileSetEditor(EditorNode *p_editor) {
 		TTR("Occlusion"),
 		TTR("Navigation"),
 		TTR("Bitmask"),
+		TTR("Bitmask Transform"),
 		TTR("Priority"),
 		TTR("Icon"),
 		TTR("Z Index")
@@ -477,9 +480,10 @@ TileSetEditor::TileSetEditor(EditorNode *p_editor) {
 	tool_editmode[EDITMODE_OCCLUSION]->set_shortcut(ED_SHORTCUT("tileset_editor/editmode_occlusion", TTR("Occlusion Mode"), KEY_3));
 	tool_editmode[EDITMODE_NAVIGATION]->set_shortcut(ED_SHORTCUT("tileset_editor/editmode_navigation", TTR("Navigation Mode"), KEY_4));
 	tool_editmode[EDITMODE_BITMASK]->set_shortcut(ED_SHORTCUT("tileset_editor/editmode_bitmask", TTR("Bitmask Mode"), KEY_5));
-	tool_editmode[EDITMODE_PRIORITY]->set_shortcut(ED_SHORTCUT("tileset_editor/editmode_priority", TTR("Priority Mode"), KEY_6));
-	tool_editmode[EDITMODE_ICON]->set_shortcut(ED_SHORTCUT("tileset_editor/editmode_icon", TTR("Icon Mode"), KEY_7));
-	tool_editmode[EDITMODE_Z_INDEX]->set_shortcut(ED_SHORTCUT("tileset_editor/editmode_z_index", TTR("Z Index Mode"), KEY_8));
+	tool_editmode[EDITMODE_BITMASK_TRANSFORM]->set_shortcut(ED_SHORTCUT("tileset_editor/editmode_bitmask_transformation", TTR("Bitmask Transformation Mode"), KEY_6));
+	tool_editmode[EDITMODE_PRIORITY]->set_shortcut(ED_SHORTCUT("tileset_editor/editmode_priority", TTR("Priority Mode"), KEY_7));
+	tool_editmode[EDITMODE_ICON]->set_shortcut(ED_SHORTCUT("tileset_editor/editmode_icon", TTR("Icon Mode"), KEY_8));
+	tool_editmode[EDITMODE_Z_INDEX]->set_shortcut(ED_SHORTCUT("tileset_editor/editmode_z_index", TTR("Z Index Mode"), KEY_9));
 
 	main_vb->add_child(tool_hb);
 	separator_editmode = memnew(HSeparator);
@@ -533,6 +537,25 @@ TileSetEditor::TileSetEditor(EditorNode *p_editor) {
 	tools[SHAPE_DELETE] = memnew(ToolButton);
 	tools[SHAPE_DELETE]->connect("pressed", this, "_on_tool_clicked", varray(SHAPE_DELETE));
 	toolbar->add_child(tools[SHAPE_DELETE]);
+
+	bitmask_transformation = memnew(OptionButton);
+	bitmask_transformation->add_item(TTR("None"), 0);
+	bitmask_transformation->add_item(TTR("Flip x"), (int)TileSet::FLIP_X);
+	bitmask_transformation->add_item(TTR("Flip y"), (int)TileSet::FLIP_Y);
+	bitmask_transformation->add_item(TTR("Flip both"), (int)TileSet::FLIP_BOTH);
+	bitmask_transformation->add_item(TTR("Transpose"), (int)TileSet::TRANSPOSE);
+	bitmask_transformation->add_item(TTR("Transpose flip x"), (int)TileSet::TRANSPOSE_FLIP_X);
+	bitmask_transformation->add_item(TTR("Transpose flip y"), (int)TileSet::TRANSPOSE_FLIP_Y);
+	bitmask_transformation->add_item(TTR("Transpose flip both"), (int)TileSet::TRANSPOSE_FLIP_BOTH);
+	bitmask_transformation->add_item(TTR("Flip any"), (int)TileSet::FLIP_ANY);
+	bitmask_transformation->add_item(TTR("Rotate"), (int)TileSet::ROTATE);
+	bitmask_transformation->add_item(TTR("Any"), (int)TileSet::ANY);
+	bitmask_transformation->add_item(TTR("Isometric flip x"), (int)TileSet::ISOMETRIC_FLIP_X);
+	bitmask_transformation->add_item(TTR("Isometric flip y"), (int)TileSet::ISOMETRIC_FLIP_Y);
+	bitmask_transformation->add_item(TTR("Isometric flip both"), (int)TileSet::ISOMETRIC_FLIP_BOTH);
+	bitmask_transformation->add_item(TTR("Isometric flip any"), (int)TileSet::ISOMETRIC_FLIP_ANY);
+	bitmask_transformation->connect("item_selected", this, "_on_bitmask_transform_changed");
+	toolbar->add_child(bitmask_transformation);
 
 	spin_priority = memnew(SpinBox);
 	spin_priority->set_min(1);
@@ -806,6 +829,7 @@ void TileSetEditor::_on_edit_mode_changed(int p_edit_mode) {
 			tools[TOOL_SELECT]->set_pressed(true);
 			tools[TOOL_SELECT]->set_tooltip(TTR("Drag handles to edit Rect.\nClick on another Tile to edit it."));
 			tools[SHAPE_DELETE]->set_tooltip(TTR("Delete selected Rect."));
+			bitmask_transformation->hide();
 			spin_priority->hide();
 			spin_z_index->hide();
 		} break;
@@ -830,6 +854,7 @@ void TileSetEditor::_on_edit_mode_changed(int p_edit_mode) {
 
 			tools[TOOL_SELECT]->set_tooltip(TTR("Select current edited sub-tile.\nClick on another Tile to edit it."));
 			tools[SHAPE_DELETE]->set_tooltip(TTR("Delete polygon."));
+			bitmask_transformation->hide();
 			spin_priority->hide();
 			spin_z_index->hide();
 
@@ -852,8 +877,10 @@ void TileSetEditor::_on_edit_mode_changed(int p_edit_mode) {
 
 			tools[TOOL_SELECT]->set_pressed(true);
 			tools[TOOL_SELECT]->set_tooltip(TTR("LMB: Set bit on.\nRMB: Set bit off.\nShift+LMB: Set wildcard bit.\nClick on another Tile to edit it."));
+			bitmask_transformation->hide();
 			spin_priority->hide();
 		} break;
+		case EDITMODE_BITMASK_TRANSFORM:
 		case EDITMODE_Z_INDEX:
 		case EDITMODE_PRIORITY:
 		case EDITMODE_ICON: {
@@ -875,16 +902,24 @@ void TileSetEditor::_on_edit_mode_changed(int p_edit_mode) {
 
 			if (edit_mode == EDITMODE_ICON) {
 				tools[TOOL_SELECT]->set_tooltip(TTR("Select sub-tile to use as icon, this will be also used on invalid autotile bindings.\nClick on another Tile to edit it."));
+				bitmask_transformation->hide();
 				spin_priority->hide();
 				spin_z_index->hide();
 			} else if (edit_mode == EDITMODE_PRIORITY) {
 				tools[TOOL_SELECT]->set_tooltip(TTR("Select sub-tile to change its priority.\nClick on another Tile to edit it."));
+				bitmask_transformation->hide();
 				spin_priority->show();
 				spin_z_index->hide();
-			} else {
+			} else if (edit_mode == EDITMODE_Z_INDEX) {
 				tools[TOOL_SELECT]->set_tooltip(TTR("Select sub-tile to change its z index.\nClick on another Tile to edit it."));
+				bitmask_transformation->hide();
 				spin_priority->hide();
 				spin_z_index->show();
+			} else {
+				tools[TOOL_SELECT]->set_tooltip(TTR("Select sub-tile to change its bitmap transformation settings.\nClick on another Tile to edit it."));
+				bitmask_transformation->show();
+				spin_priority->hide();
+				spin_z_index->hide();
 			}
 		} break;
 		default: {
@@ -1036,6 +1071,10 @@ void TileSetEditor::_on_workspace_draw() {
 				}
 				draw_polygon_shapes();
 				draw_grid_snap();
+			} break;
+			case EDITMODE_BITMASK_TRANSFORM: {
+				bitmask_transformation->select_by_id(tileset->autotile_get_subtile_allowed_transforms(get_current_tile(), edited_shape_coord));
+				draw_highlight_subtile(edited_shape_coord);
 			} break;
 			case EDITMODE_PRIORITY: {
 				spin_priority->set_value(tileset->autotile_get_subtile_priority(get_current_tile(), edited_shape_coord));
@@ -1562,6 +1601,7 @@ void TileSetEditor::_on_workspace_input(const Ref<InputEvent> &p_ie) {
 				case EDITMODE_COLLISION:
 				case EDITMODE_OCCLUSION:
 				case EDITMODE_NAVIGATION:
+				case EDITMODE_BITMASK_TRANSFORM:
 				case EDITMODE_PRIORITY:
 				case EDITMODE_Z_INDEX: {
 					Vector2 shape_anchor = Vector2(0, 0);
@@ -1925,6 +1965,20 @@ void TileSetEditor::_on_tool_clicked(int p_tool) {
 			workspace->update();
 		}
 	}
+}
+
+void TileSetEditor::_on_bitmask_transform_changed(int index) {
+	int id = bitmask_transformation->get_item_id(index);
+	if (id == tileset->autotile_get_subtile_allowed_transforms(get_current_tile(), edited_shape_coord)) {
+		return;
+	}
+
+	undo_redo->create_action(TTR("Edit Tile Bitmask Transform"));
+	undo_redo->add_do_method(tileset.ptr(), "autotile_set_subtile_allowed_transforms", get_current_tile(), edited_shape_coord, id);
+	undo_redo->add_undo_method(tileset.ptr(), "autotile_set_subtile_allowed_transforms", get_current_tile(), edited_shape_coord, tileset->autotile_get_subtile_allowed_transforms(get_current_tile(), edited_shape_coord));
+	undo_redo->add_do_method(workspace, "update");
+	undo_redo->add_undo_method(workspace, "update");
+	undo_redo->commit_action();
 }
 
 void TileSetEditor::_on_priority_changed(float val) {

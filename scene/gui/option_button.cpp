@@ -232,9 +232,34 @@ void OptionButton::_select_int(int p_which) {
 	_select(p_which, false);
 }
 
+void OptionButton::_select_id(int p_which) {
+	int index = -1;
+	for (int i = 0; i < popup->get_item_count(); i++) {
+		if (popup->get_item_id(i) == p_which) {
+			index = i;
+			break;
+		}
+	}
+
+	if (index == -1)
+		return;
+
+	for (int i = 0; i < popup->get_item_count(); i++) {
+		popup->set_item_checked(i, popup->get_item_id(i) == p_which);
+	}
+
+	current = index;
+	set_text(popup->get_item_text(current));
+	set_icon(popup->get_item_icon(current));
+}
+
 void OptionButton::select(int p_idx) {
 
 	_select(p_idx, false);
+}
+
+void OptionButton::select_by_id(int p_id) {
+	_select_id(p_id);
 }
 
 int OptionButton::get_selected() const {
@@ -329,6 +354,7 @@ void OptionButton::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("add_separator"), &OptionButton::add_separator);
 	ClassDB::bind_method(D_METHOD("clear"), &OptionButton::clear);
 	ClassDB::bind_method(D_METHOD("select", "idx"), &OptionButton::select);
+	ClassDB::bind_method(D_METHOD("select_by_id", "id"), &OptionButton::select_by_id);
 	ClassDB::bind_method(D_METHOD("get_selected"), &OptionButton::get_selected);
 	ClassDB::bind_method(D_METHOD("get_selected_id"), &OptionButton::get_selected_id);
 	ClassDB::bind_method(D_METHOD("get_selected_metadata"), &OptionButton::get_selected_metadata);
