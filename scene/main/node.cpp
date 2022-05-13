@@ -1140,6 +1140,19 @@ void Node::add_child(Node *p_child, bool p_legible_unique_name) {
 	_add_child_nocheck(p_child, p_child->data.name);
 }
 
+void Node::add_child_above_node(Node *p_node, Node *p_child, bool p_legible_unique_name) {
+	ERR_FAIL_NULL(p_node);
+	ERR_FAIL_NULL(p_child);
+
+	add_child(p_child, p_legible_unique_name);
+
+	if (p_node->data.parent == this) {
+		move_child(p_child, p_node->get_position_in_parent());
+	} else {
+		WARN_PRINT("Cannot move above node " + p_node->get_name() + " as " + p_child->get_name() + " does not share a parent.");
+	}
+}
+
 void Node::add_child_below_node(Node *p_node, Node *p_child, bool p_legible_unique_name) {
 	ERR_FAIL_NULL(p_node);
 	ERR_FAIL_NULL(p_child);
@@ -2711,6 +2724,7 @@ void Node::_bind_methods() {
 	GLOBAL_DEF("node/name_casing", NAME_CASING_PASCAL_CASE);
 	ProjectSettings::get_singleton()->set_custom_property_info("node/name_casing", PropertyInfo(Variant::INT, "node/name_casing", PROPERTY_HINT_ENUM, "PascalCase,camelCase,snake_case"));
 
+	ClassDB::bind_method(D_METHOD("add_child_above_node", "node", "child_node", "legible_unique_name"), &Node::add_child_above_node, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("add_child_below_node", "node", "child_node", "legible_unique_name"), &Node::add_child_below_node, DEFVAL(false));
 
 	ClassDB::bind_method(D_METHOD("set_name", "name"), &Node::set_name);
