@@ -1568,7 +1568,7 @@ Vector2 TileMap::map_to_world(const Vector2 &p_pos, bool p_ignore_ofs) const {
 	return _map_to_world(p_pos.x, p_pos.y, p_ignore_ofs);
 }
 
-Vector2 TileMap::world_to_map(const Vector2 &p_pos) const {
+Vector2 TileMap::world_to_map(const Vector2 &p_pos, bool p_floor) const {
 	Vector2 ret = get_cell_transform().affine_inverse().xform(p_pos);
 
 	// Account for precision errors on the border (GH-23250).
@@ -1603,7 +1603,7 @@ Vector2 TileMap::world_to_map(const Vector2 &p_pos) const {
 		}
 	}
 
-	return ret.floor();
+	return p_floor ? ret.floor() : ret;
 }
 
 void TileMap::set_y_sort_mode(bool p_enable) {
@@ -1829,7 +1829,7 @@ void TileMap::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_used_rect"), &TileMap::get_used_rect);
 
 	ClassDB::bind_method(D_METHOD("map_to_world", "map_position", "ignore_half_ofs"), &TileMap::map_to_world, DEFVAL(false));
-	ClassDB::bind_method(D_METHOD("world_to_map", "world_position"), &TileMap::world_to_map);
+	ClassDB::bind_method(D_METHOD("world_to_map", "world_position", "floor"), &TileMap::world_to_map, DEFVAL(true));
 
 	ClassDB::bind_method(D_METHOD("_clear_quadrants"), &TileMap::_clear_quadrants);
 	ClassDB::bind_method(D_METHOD("_recreate_quadrants"), &TileMap::_recreate_quadrants);
