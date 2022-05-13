@@ -250,6 +250,7 @@ public:
 	void set_name(const String &p_name);
 
 	void add_child(Node *p_child, bool p_legible_unique_name = false);
+	void add_child_above_node(Node *p_node, Node *p_child, bool p_legible_unique_name = false);
 	void add_child_below_node(Node *p_node, Node *p_child, bool p_legible_unique_name = false);
 	void remove_child(Node *p_child);
 
