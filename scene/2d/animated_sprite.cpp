@@ -470,7 +470,7 @@ void AnimatedSprite::set_sprite_frames(const Ref<SpriteFrames> &p_frames) {
 	}
 
 	if (!frames.is_valid()) {
-		frame = 0;
+		set_frame(0);
 	} else {
 		set_frame(frame);
 	}
@@ -513,6 +513,14 @@ void AnimatedSprite::set_frame(int p_frame) {
 }
 int AnimatedSprite::get_frame() const {
 	return frame;
+}
+
+void AnimatedSprite::set_reset_frame_on_animation_change(bool p_reset) {
+	reset_frame_on_animation_change = p_reset;	
+}
+
+bool AnimatedSprite::get_reset_frame_on_animation_change() const {
+	return reset_frame_on_animation_change;
 }
 
 void AnimatedSprite::set_speed_scale(float p_speed_scale) {
@@ -590,7 +598,7 @@ void AnimatedSprite::play(const StringName &p_animation, const bool p_backwards)
 
 	if (p_animation) {
 		set_animation(p_animation);
-		if (frames.is_valid() && backwards && get_frame() == 0) {
+		if (frames.is_valid() && backwards && get_frame() == 0 && reset_frame_on_animation_change) {
 			set_frame(frames->get_frame_count(p_animation) - 1);
 		}
 	}
@@ -634,8 +642,10 @@ void AnimatedSprite::set_animation(const StringName &p_animation) {
 	}
 
 	animation = p_animation;
-	_reset_timeout();
-	set_frame(0);
+	if (reset_frame_on_animation_change) {
+		_reset_timeout();
+		set_frame(0);
+	}
 	_change_notify();
 	update();
 }
@@ -684,6 +694,9 @@ void AnimatedSprite::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_frame", "frame"), &AnimatedSprite::set_frame);
 	ClassDB::bind_method(D_METHOD("get_frame"), &AnimatedSprite::get_frame);
 
+	ClassDB::bind_method(D_METHOD("set_reset_frame_on_animation_change", "reset_frame_on_animation_change"), &AnimatedSprite::set_reset_frame_on_animation_change);
+	ClassDB::bind_method(D_METHOD("get_reset_frame_on_animation_change"), &AnimatedSprite::get_reset_frame_on_animation_change);
+
 	ClassDB::bind_method(D_METHOD("set_speed_scale", "speed_scale"), &AnimatedSprite::set_speed_scale);
 	ClassDB::bind_method(D_METHOD("get_speed_scale"), &AnimatedSprite::get_speed_scale);
 
@@ -695,6 +708,7 @@ void AnimatedSprite::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "frames", PROPERTY_HINT_RESOURCE_TYPE, "SpriteFrames"), "set_sprite_frames", "get_sprite_frames");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "animation"), "set_animation", "get_animation");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "frame"), "set_frame", "get_frame");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "reset_frame_on_animation_change"), "set_reset_frame_on_animation_change", "get_reset_frame_on_animation_change");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "speed_scale"), "set_speed_scale", "get_speed_scale");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "playing"), "_set_playing", "_is_playing");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "centered"), "set_centered", "is_centered");
@@ -709,6 +723,7 @@ AnimatedSprite::AnimatedSprite() {
 	vflip = false;
 
 	frame = 0;
+	reset_frame_on_animation_change = true;
 	speed_scale = 1.0f;
 	playing = false;
 	backwards = false;

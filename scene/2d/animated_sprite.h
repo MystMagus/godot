@@ -129,6 +129,7 @@ class AnimatedSprite : public Node2D {
 	bool backwards;
 	StringName animation;
 	int frame;
+	bool reset_frame_on_animation_change;
 	float speed_scale;
 
 	bool centered;
@@ -179,6 +180,9 @@ public:
 
 	void set_frame(int p_frame);
 	int get_frame() const;
+
+	void set_reset_frame_on_animation_change(bool p_reset);
+	bool get_reset_frame_on_animation_change() const;
 
 	void set_speed_scale(float p_speed_scale);
 	float get_speed_scale() const;
