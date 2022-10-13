@@ -1895,22 +1895,13 @@ void AnimationTrackEdit::_notification(int p_what) {
 				node = root->get_node(path);
 			}
 
-			String text;
+			String text = get_text();
 			Color text_color = color;
 			if (node && EditorNode::get_singleton()->get_editor_selection()->is_selected(node)) {
 				text_color = get_color("accent_color", "Editor");
 			}
 
 			if (in_group) {
-				if (animation->track_get_type(track) == Animation::TYPE_METHOD) {
-					text = TTR("Functions:");
-				} else if (animation->track_get_type(track) == Animation::TYPE_AUDIO) {
-					text = TTR("Audio Clips:");
-				} else if (animation->track_get_type(track) == Animation::TYPE_ANIMATION) {
-					text = TTR("Anim Clips:");
-				} else {
-					text += path.get_concatenated_subnames();
-				}
 				text_color.a *= 0.7;
 			} else if (node) {
 				Ref<Texture> icon = EditorNode::get_singleton()->get_object_icon(node, "Node");
@@ -1918,17 +1909,12 @@ void AnimationTrackEdit::_notification(int p_what) {
 				draw_texture(icon, Point2(ofs, int(get_size().height - icon->get_height()) / 2));
 				icon_cache = icon;
 
-				text = String() + node->get_name() + ":" + path.get_concatenated_subnames();
 				ofs += hsep;
 				ofs += icon->get_width();
 
 			} else {
 				icon_cache = type_icon;
-
-				text = path;
 			}
-
-			path_cache = text;
 
 			path_rect = Rect2(ofs, 0, limit - ofs - hsep, get_size().height);
 
@@ -2345,6 +2331,34 @@ Size2 AnimationTrackEdit::get_minimum_size() const {
 	max_h = MAX(max_h, get_key_height());
 
 	return Vector2(1, max_h + separation);
+}
+
+String AnimationTrackEdit::get_text() const {
+	NodePath path = animation->track_get_path(track);
+	Node *node = nullptr;
+	if (root && root->has_node(path)) {
+		node = root->get_node(path);
+	}
+
+	String text;
+	if (in_group) {
+		if (animation->track_get_type(track) == Animation::TYPE_METHOD) {
+			text = TTR("Functions:");
+		} else if (animation->track_get_type(track) == Animation::TYPE_AUDIO) {
+			text = TTR("Audio Clips:");
+		} else if (animation->track_get_type(track) == Animation::TYPE_ANIMATION) {
+			text = TTR("Anim Clips:");
+		} else {
+			text += path.get_concatenated_subnames();
+		}
+	} else if (node) {
+		text = String() + node->get_name() + ":" + path.get_concatenated_subnames();
+	} else {
+		text = path;
+	}
+
+	path_cache = text;
+	return text;
 }
 
 void AnimationTrackEdit::set_undo_redo(UndoRedo *p_undo_redo) {
@@ -3149,6 +3163,9 @@ void AnimationTrackEditGroup::set_timeline(AnimationTimelineEdit *p_timeline) {
 void AnimationTrackEditGroup::set_root(Node *p_root) {
 	root = p_root;
 	update();
+}
+const String& AnimationTrackEditGroup::get_node_name() const {
+	return node_name;
 }
 
 void AnimationTrackEditGroup::_zoom_changed() {
@@ -4089,6 +4106,20 @@ bool AnimationTrackEditor::is_snap_enabled() const {
 	return snap->is_pressed() ^ Input::get_singleton()->is_key_pressed(KEY_CONTROL);
 }
 
+struct GroupComparator {
+	StringName::AlphCompare compare;
+	bool operator()(AnimationTrackEditGroup *p_a, AnimationTrackEditGroup *p_b) const {
+		return compare(p_a->get_node_name(), p_b->get_node_name());
+	}
+};
+
+struct TrackComparator {
+	StringName::AlphCompare compare;
+	bool operator()(AnimationTrackEdit *p_a, AnimationTrackEdit *p_b) const {
+		return compare(p_a->get_text(), p_b->get_text());
+	}
+};
+
 void AnimationTrackEditor::_update_tracks() {
 	int selected = _get_track_selected();
 
@@ -4216,7 +4247,7 @@ void AnimationTrackEditor::_update_tracks() {
 				VBoxContainer *vb = memnew(VBoxContainer);
 				vb->add_constant_override("separation", 0);
 				vb->add_child(g);
-				track_vbox->add_child(vb);
+				//track_vbox->add_child(vb);
 				group_sort[base_path] = vb;
 			}
 
@@ -4256,6 +4287,12 @@ void AnimationTrackEditor::_update_tracks() {
 		track_edit->connect("create_reset_request", this, "_edit_menu_pressed", varray(EDIT_ADD_RESET_KEY), CONNECT_DEFERRED);
 		track_edit->connect("delete_request", this, "_edit_menu_pressed", varray(EDIT_DELETE_SELECTION), CONNECT_DEFERRED);
 	}
+
+	groups.sort_custom<GroupComparator>();
+	for(int i = 0; i < groups.size(); i++) {
+		track_vbox->add_child(groups[i]->get_parent());
+	}
+	track_edits.sort_custom<TrackComparator>();
 }
 
 void AnimationTrackEditor::_animation_changed() {

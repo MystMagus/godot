@@ -174,7 +174,7 @@ class AnimationTrackEdit : public Control {
 	void _zoom_changed();
 
 	Ref<Texture> icon_cache;
-	String path_cache;
+	mutable String path_cache;
 
 	void _menu_selected(int p_index);
 
@@ -228,6 +228,7 @@ public:
 	NodePath get_path() const;
 	void set_animation_and_track(const Ref<Animation> &p_animation, int p_track);
 	virtual Size2 get_minimum_size() const;
+	String get_text() const;
 
 	void set_undo_redo(UndoRedo *p_undo_redo);
 	void set_timeline(AnimationTimelineEdit *p_timeline);
@@ -276,6 +277,7 @@ public:
 	virtual Size2 get_minimum_size() const;
 	void set_timeline(AnimationTimelineEdit *p_timeline);
 	void set_root(Node *p_root);
+	const String& get_node_name() const;
 
 	AnimationTrackEditGroup();
 };
