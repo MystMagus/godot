@@ -251,6 +251,8 @@ Array SpriteFrames::_get_animations() const {
 		anims.push_back(d);
 	}
 
+	AnimationSorter sorter;
+	anims.sort_custom(&sorter, "sort");
 	return anims;
 }
 
@@ -308,10 +310,19 @@ void SpriteFrames::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_get_animations"), &SpriteFrames::_get_animations);
 
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "animations", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL), "_set_animations", "_get_animations");
+	AnimationSorter::_bind_methods();
 }
 
 SpriteFrames::SpriteFrames() {
 	add_animation(SceneStringNames::get_singleton()->_default);
+}
+
+bool SpriteFrames::AnimationSorter::sort(const Variant& p_a, const Variant& p_b) {
+	return ((const Dictionary&)p_a)["name"] < ((const Dictionary&)p_b)["name"];
+}
+
+void SpriteFrames::AnimationSorter::_bind_methods() {
+	ClassDB::bind_method("sort", &SpriteFrames::AnimationSorter::sort);
 }
 
 void AnimatedSprite::_validate_property(PropertyInfo &property) const {

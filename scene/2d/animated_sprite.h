@@ -117,6 +117,14 @@ public:
 	void clear_all();
 
 	SpriteFrames();
+
+private:
+	class AnimationSorter : public Object {
+	public:
+		bool sort(const Variant& p_a, const Variant& p_b);
+		
+		static void _bind_methods();
+	};
 };
 
 class AnimatedSprite : public Node2D {
