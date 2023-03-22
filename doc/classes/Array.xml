@@ -254,7 +254,7 @@
 			</description>
 		</method>
 		<method name="erase">
-			<return type="void" />
+			<return type="bool" />
 			<param index="0" name="value" type="Variant" />
 			<description>
 				Removes the first occurrence of a value from the array. If the value does not exist in the array, nothing happens. To remove an element by index, use [method remove_at] instead.

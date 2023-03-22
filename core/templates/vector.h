@@ -71,11 +71,12 @@ public:
 	void fill(T p_elem);
 
 	void remove_at(int p_index) { _cowdata.remove_at(p_index); }
-	void erase(const T &p_val) {
+	bool erase(const T &p_val) {
 		int idx = find(p_val);
 		if (idx >= 0) {
 			remove_at(idx);
 		}
+		return idx >= 0;
 	}
 	void reverse();
 
