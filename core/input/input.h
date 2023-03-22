@@ -218,7 +218,7 @@ private:
 	JoyButton _get_output_button(String output);
 	JoyAxis _get_output_axis(String output);
 	void _button_event(int p_device, JoyButton p_index, bool p_pressed);
-	void _axis_event(int p_device, JoyAxis p_axis, float p_value);
+	void _axis_event(int p_device, JoyAxis p_axis, float p_value, float p_last_value);
 
 	void _parse_input_event_impl(const Ref<InputEvent> &p_event, bool p_is_emulated);
 

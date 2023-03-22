@@ -1000,7 +1000,7 @@ void Input::joy_button(int p_device, JoyButton p_button, bool p_pressed) {
 	}
 
 	if (map.type == TYPE_AXIS) {
-		_axis_event(p_device, (JoyAxis)map.index, p_pressed ? map.value : 0.0);
+		_axis_event(p_device, (JoyAxis)map.index, p_pressed ? map.value : 0.0, p_pressed ? 0.0 : map.value);
 	}
 	// no event?
 }
@@ -1016,10 +1016,13 @@ void Input::joy_axis(int p_device, JoyAxis p_axis, float p_value) {
 		return;
 	}
 
+	float last_axis = joy.last_axis[(size_t)p_axis];
+	float last_val = last_axis;
 	joy.last_axis[(size_t)p_axis] = p_value;
+	float val = p_value;
 
 	if (joy.mapping == -1) {
-		_axis_event(p_device, p_axis, p_value);
+		_axis_event(p_device, p_axis, val, last_val);
 		return;
 	}
 
@@ -1067,7 +1070,7 @@ void Input::joy_axis(int p_device, JoyAxis p_axis, float p_value) {
 			// Convert to a value between 0.0f and 1.0f.
 			value = 0.5f + value / 2.0f;
 		}
-		_axis_event(p_device, axis, value);
+		_axis_event(p_device, axis, value, last_val);
 		return;
 	}
 }
@@ -1106,7 +1109,7 @@ void Input::joy_hat(int p_device, BitField<HatMask> p_val) {
 				_button_event(p_device, (JoyButton)map[hat_direction].index, (int)p_val & hat_mask);
 			}
 			if (map[hat_direction].type == TYPE_AXIS) {
-				_axis_event(p_device, (JoyAxis)map[hat_direction].index, ((int)p_val & hat_mask) ? map[hat_direction].value : 0.0);
+				_axis_event(p_device, (JoyAxis)map[hat_direction].index, ((int)p_val & hat_mask) ? map[hat_direction].value : 0.0, ((int)p_val & hat_mask) ? 0.0 : map[hat_direction].value);
 			}
 		}
 	}
@@ -1124,14 +1127,30 @@ void Input::_button_event(int p_device, JoyButton p_index, bool p_pressed) {
 	parse_input_event(ievent);
 }
 
-void Input::_axis_event(int p_device, JoyAxis p_axis, float p_value) {
-	Ref<InputEventJoypadMotion> ievent;
-	ievent.instantiate();
-	ievent->set_device(p_device);
-	ievent->set_axis(p_axis);
-	ievent->set_axis_value(p_value);
+void Input::_axis_event(int p_device, JoyAxis p_axis, float p_value, float p_last_value) {
+	bool sign_diff = (p_last_value < 0) != (p_value < 0);
+	// Release event
+	if ((p_value == 0 && p_last_value != 0) || sign_diff) {
+		Ref<InputEventJoypadMotion> ievent;
+		ievent.instantiate();
+		ievent->set_device(p_device);
+		ievent->set_axis(p_axis);
+		ievent->set_axis_value(p_last_value < 0 ? -FLT_EPSILON : FLT_EPSILON);
+		ievent->set_axis_last_value(p_last_value);
 
-	parse_input_event(ievent);
+		parse_input_event(ievent);
+	}
+	// Active event
+	if (p_value != 0) {
+		Ref<InputEventJoypadMotion> ievent;
+		ievent.instantiate();
+		ievent->set_device(p_device);
+		ievent->set_axis(p_axis);
+		ievent->set_axis_value(p_value);
+		ievent->set_axis_last_value(!sign_diff ? p_last_value : 0);
+
+		parse_input_event(ievent);
+	}
 }
 
 Input::JoyEvent Input::_get_mapped_button_event(const JoyDeviceMapping &mapping, JoyButton p_button) {

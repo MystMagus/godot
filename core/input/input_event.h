@@ -301,6 +301,7 @@ class InputEventJoypadMotion : public InputEvent {
 	GDCLASS(InputEventJoypadMotion, InputEvent);
 	JoyAxis axis = (JoyAxis)0; ///< Joypad axis
 	float axis_value = 0; ///< -1 to 1
+	float axis_last_value = 0; ///< -1 to 1
 
 protected:
 	static void _bind_methods();
@@ -311,6 +312,8 @@ public:
 
 	void set_axis_value(float p_value);
 	float get_axis_value() const;
+	void set_axis_last_value(float p_value);
+	float get_axis_last_value() const;
 
 	virtual bool is_pressed() const override;
 
