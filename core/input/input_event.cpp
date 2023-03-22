@@ -1027,6 +1027,10 @@ bool InputEventJoypadMotion::is_pressed() const {
 	return Math::abs(axis_value) >= 0.5f;
 }
 
+bool InputEventJoypadMotion::is_echo() const {
+	return Math::abs(axis_last_value) >= 0.5f;
+}
+
 bool InputEventJoypadMotion::action_match(const Ref<InputEvent> &p_event, bool p_exact_match, float p_deadzone, bool *r_pressed, float *r_strength, float *r_raw_strength) const {
 	Ref<InputEventJoypadMotion> jm = p_event;
 	if (jm.is_null()) {
