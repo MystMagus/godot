@@ -37,6 +37,7 @@ class RectangleShape2D : public Shape2D {
 	GDCLASS(RectangleShape2D, Shape2D);
 
 	Vector2 extents;
+	bool fill_rect;
 	void _update_shape();
 
 protected:
@@ -45,6 +46,8 @@ protected:
 public:
 	void set_extents(const Vector2 &p_extents);
 	Vector2 get_extents() const;
+	void set_fill_rect(bool p_fill);
+	bool get_fill_rect() const;
 
 	virtual void draw(const RID &p_to_rid, const Color &p_color);
 	virtual Rect2 get_rect() const;
