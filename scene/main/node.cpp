@@ -1251,12 +1251,17 @@ void Node::_generate_serial_child_name(const Node *p_child, StringName &name) co
 	}
 }
 
-void Node::_add_child_nocheck(Node *p_child, const StringName &p_name) {
+void Node::_add_child_nocheck(Node *p_child, const StringName &p_name, bool p_at_start) {
 	//add a child node quickly, without name validation
 
 	p_child->data.name = p_name;
 	p_child->data.pos = data.children.size();
-	data.children.push_back(p_child);
+	if(p_at_start) {
+		data.children.insert(0, p_child);
+	}
+	else {
+		data.children.push_back(p_child);
+	}
 	p_child->data.parent = this;
 	p_child->notification(NOTIFICATION_PARENTED);
 
@@ -1276,7 +1281,7 @@ void Node::_add_child_nocheck(Node *p_child, const StringName &p_name) {
 	}
 }
 
-void Node::add_child(Node *p_child, bool p_legible_unique_name) {
+void Node::add_child(Node *p_child, bool p_legible_unique_name, bool p_at_start) {
 	ERR_FAIL_NULL(p_child);
 	ERR_FAIL_COND_MSG(p_child == this, vformat("Can't add child '%s' to itself.", p_child->get_name())); // adding to itself!
 	ERR_FAIL_COND_MSG(p_child->data.parent, vformat("Can't add child '%s' to '%s', already has a parent '%s'.", p_child->get_name(), get_name(), p_child->data.parent->get_name())); //Fail if node has a parent
@@ -1288,7 +1293,7 @@ void Node::add_child(Node *p_child, bool p_legible_unique_name) {
 	/* Validate name */
 	_validate_child_name(p_child, p_legible_unique_name);
 
-	_add_child_nocheck(p_child, p_child->data.name);
+	_add_child_nocheck(p_child, p_child->data.name, p_at_start);
 }
 
 void Node::add_child_below_node(Node *p_node, Node *p_child, bool p_legible_unique_name) {
@@ -2975,7 +2980,7 @@ void Node::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_name", "name"), &Node::set_name);
 	ClassDB::bind_method(D_METHOD("get_name"), &Node::get_name);
-	ClassDB::bind_method(D_METHOD("add_child", "node", "legible_unique_name"), &Node::add_child, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("add_child", "node", "legible_unique_name", "add at start"), &Node::add_child, DEFVAL(false), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("remove_child", "node"), &Node::remove_child);
 	ClassDB::bind_method(D_METHOD("get_child_count"), &Node::get_child_count);
 	ClassDB::bind_method(D_METHOD("get_children"), &Node::_get_children);
