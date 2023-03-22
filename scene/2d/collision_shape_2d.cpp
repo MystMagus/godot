@@ -37,6 +37,7 @@
 
 void CollisionShape2D::_shape_changed() {
 	queue_redraw();
+	emit_signal("shape_changed");
 }
 
 void CollisionShape2D::_update_in_shape_owner(bool p_xform_only) {
@@ -157,6 +158,7 @@ void CollisionShape2D::set_shape(const Ref<Shape2D> &p_shape) {
 	if (shape.is_valid()) {
 		shape->connect("changed", callable_mp(this, &CollisionShape2D::_shape_changed));
 	}
+	emit_signal("shape_changed");
 
 	update_configuration_warnings();
 }
@@ -277,6 +279,7 @@ void CollisionShape2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_debug_color", "color"), &CollisionShape2D::set_debug_color);
 	ClassDB::bind_method(D_METHOD("get_debug_color"), &CollisionShape2D::get_debug_color);
 
+	ADD_SIGNAL(MethodInfo("shape_changed"));
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "shape", PROPERTY_HINT_RESOURCE_TYPE, "Shape2D"), "set_shape", "get_shape");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "disabled"), "set_disabled", "is_disabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "one_way_collision"), "set_one_way_collision", "is_one_way_collision_enabled");
