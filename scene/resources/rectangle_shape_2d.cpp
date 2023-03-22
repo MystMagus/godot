@@ -67,8 +67,19 @@ Size2 RectangleShape2D::get_size() const {
 	return size;
 }
 
+void RectangleShape2D::set_fill_rect(bool p_fill) {
+	fill_rect = p_fill;
+	_update_shape();
+}
+
+bool RectangleShape2D::get_fill_rect() const {
+	return fill_rect;
+}
+
 void RectangleShape2D::draw(const RID &p_to_rid, const Color &p_color) {
-	RenderingServer::get_singleton()->canvas_item_add_rect(p_to_rid, Rect2(-size * 0.5, size), p_color);
+	if(fill_rect || !is_collision_outline_enabled()) {
+		RenderingServer::get_singleton()->canvas_item_add_rect(p_to_rid, Rect2(-size * 0.5, size), p_color);
+	}
 	if (is_collision_outline_enabled()) {
 		// Draw an outlined rectangle to make individual shapes easier to distinguish.
 		Vector<Vector2> stroke_points;
@@ -96,12 +107,16 @@ real_t RectangleShape2D::get_enclosing_radius() const {
 void RectangleShape2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_size", "size"), &RectangleShape2D::set_size);
 	ClassDB::bind_method(D_METHOD("get_size"), &RectangleShape2D::get_size);
+	ClassDB::bind_method(D_METHOD("set_fill_rect", "fill_rect"), &RectangleShape2D::set_fill_rect);
+	ClassDB::bind_method(D_METHOD("get_fill_rect"), &RectangleShape2D::get_fill_rect);
 
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "size", PROPERTY_HINT_NONE, "suffix:px"), "set_size", "get_size");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "fill_rect"), "set_fill_rect", "get_fill_rect");
 }
 
 RectangleShape2D::RectangleShape2D() :
 		Shape2D(PhysicsServer2D::get_singleton()->rectangle_shape_create()) {
 	size = Size2(20, 20);
+	fill_rect = true;
 	_update_shape();
 }
