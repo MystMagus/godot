@@ -2149,6 +2149,9 @@ void AnimatedTexture::_update_proxy() {
 		delta = float(double(ticks - prev_ticks) / 1000000.0);
 		prev_ticks = ticks;
 	}
+	if(pause) {
+		return;
+	}
 
 	time += delta;
 
@@ -2161,7 +2164,7 @@ void AnimatedTexture::_update_proxy() {
 	}
 
 	int iter_max = frame_count;
-	while (iter_max && !pause) {
+	while (iter_max) {
 		float frame_limit = limit + frames[current_frame].delay_sec;
 
 		if (time > frame_limit) {
