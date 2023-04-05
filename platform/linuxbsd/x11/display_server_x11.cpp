@@ -128,6 +128,7 @@ bool DisplayServerX11::has_feature(Feature p_feature) const {
 #endif
 		case FEATURE_CLIPBOARD_PRIMARY:
 		case FEATURE_TEXT_TO_SPEECH:
+		case FEATURE_SCREEN_CAPTURE:
 			return true;
 		default: {
 		}
@@ -604,7 +605,7 @@ String DisplayServerX11::_clipboard_get_impl(Atom p_source, Window x11_window, A
 							success = true;
 						}
 					} else {
-						printf("Failed to get selection data chunk.\n");
+						print_verbose("Failed to get selection data chunk.");
 						done = true;
 					}
 
@@ -631,7 +632,7 @@ String DisplayServerX11::_clipboard_get_impl(Atom p_source, Window x11_window, A
 			if (result == Success) {
 				ret.parse_utf8((const char *)data);
 			} else {
-				printf("Failed to get selection data.\n");
+				print_verbose("Failed to get selection data.");
 			}
 
 			if (data) {
@@ -1167,6 +1168,29 @@ int DisplayServerX11::screen_get_dpi(int p_screen) const {
 
 	//could not get dpi
 	return 96;
+}
+
+Color DisplayServerX11::screen_get_pixel(const Point2i &p_position) const {
+	Point2i pos = p_position;
+
+	int number_of_screens = XScreenCount(x11_display);
+	for (int i = 0; i < number_of_screens; i++) {
+		Window root = XRootWindow(x11_display, i);
+		XWindowAttributes root_attrs;
+		XGetWindowAttributes(x11_display, root, &root_attrs);
+		if ((pos.x >= root_attrs.x) && (pos.x <= root_attrs.x + root_attrs.width) && (pos.y >= root_attrs.y) && (pos.y <= root_attrs.y + root_attrs.height)) {
+			XImage *image = XGetImage(x11_display, root, pos.x, pos.y, 1, 1, AllPlanes, XYPixmap);
+			if (image) {
+				XColor c;
+				c.pixel = XGetPixel(image, 0, 0);
+				XFree(image);
+				XQueryColor(x11_display, XDefaultColormap(x11_display, i), &c);
+				return Color(float(c.red) / 65535.0, float(c.green) / 65535.0, float(c.blue) / 65535.0, 1.0);
+			}
+		}
+	}
+
+	return Color();
 }
 
 float DisplayServerX11::screen_get_refresh_rate(int p_screen) const {
@@ -2824,7 +2848,7 @@ Key DisplayServerX11::keyboard_get_keycode_from_physical(Key p_keycode) const {
 	Key modifiers = p_keycode & KeyModifierMask::MODIFIER_MASK;
 	Key keycode_no_mod = p_keycode & KeyModifierMask::CODE_MASK;
 	unsigned int xkeycode = KeyMappingX11::get_xlibcode(keycode_no_mod);
-	KeySym xkeysym = XkbKeycodeToKeysym(x11_display, xkeycode, 0, 0);
+	KeySym xkeysym = XkbKeycodeToKeysym(x11_display, xkeycode, keyboard_get_current_layout(), 0);
 	if (is_ascii_lower_case(xkeysym)) {
 		xkeysym -= ('a' - 'A');
 	}
@@ -3319,7 +3343,7 @@ Atom DisplayServerX11::_process_selection_request_target(Atom p_target, Window p
 		return p_property;
 	} else {
 		char *target_name = XGetAtomName(x11_display, p_target);
-		printf("Target '%s' not supported.\n", target_name);
+		print_verbose(vformat("Target '%s' not supported.", target_name));
 		if (target_name) {
 			XFree(target_name);
 		}

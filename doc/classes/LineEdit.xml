@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="LineEdit" inherits="Control" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="LineEdit" inherits="Control" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Control that provides single-line string editing.
 	</brief_description>
@@ -107,6 +107,12 @@
 			<return type="float" />
 			<description>
 				Returns the scroll offset due to [member caret_column], as a number of characters.
+			</description>
+		</method>
+		<method name="get_selected_text">
+			<return type="String" />
+			<description>
+				Returns the text inside the selection.
 			</description>
 		</method>
 		<method name="get_selection_from_column" qualifiers="const">
