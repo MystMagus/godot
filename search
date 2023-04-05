@@ -1,0 +1,1 @@
+grep --color=auto --exclude=*.{a,o,po,xml,64,x86_64} -nr $1
