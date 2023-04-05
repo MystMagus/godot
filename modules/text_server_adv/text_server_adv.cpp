@@ -5780,7 +5780,7 @@ Vector2i TextServerAdvanced::_shaped_text_get_range(const RID &p_shaped) const {
 	ERR_FAIL_COND_V(!sd, Vector2i());
 
 	MutexLock lock(sd->mutex);
-	return Vector2(sd->start, sd->end);
+	return Vector2i(sd->start, sd->end);
 }
 
 Array TextServerAdvanced::_shaped_text_get_objects(const RID &p_shaped) const {
