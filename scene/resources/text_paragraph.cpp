@@ -526,12 +526,49 @@ int TextParagraph::get_line_count() const {
 	return (int)lines_rid.size();
 }
 
+int TextParagraph::get_visible_line_count() const {
+	_THREAD_SAFE_METHOD_
+
+	const_cast<TextParagraph *>(this)->_shape_lines();
+	return (max_lines_visible >= 0) ? MIN(max_lines_visible, (int)lines_rid.size()) : (int)lines_rid.size();
+}
+
 void TextParagraph::set_max_lines_visible(int p_lines) {
 	_THREAD_SAFE_METHOD_
 
 	if (p_lines != max_lines_visible) {
 		max_lines_visible = p_lines;
 		lines_dirty = true;
+	}
+}
+
+void TextParagraph::set_max_lines_visible_by_visible_characters(int p_characters) {
+	_THREAD_SAFE_METHOD_
+
+	const_cast<TextParagraph *>(this)->_shape_lines();
+
+	if (p_characters == 0) {
+		max_lines_visible = 0;
+		lines_dirty = true;
+	}
+	else if(p_characters < 0) {
+		max_lines_visible = -1;
+		lines_dirty = true;
+	}
+	else {
+		int lines = (int)lines_rid.size();
+		int remaining = p_characters;
+		int last_end = 0;
+		for (int i = 0; i < lines; i++) {
+			Vector2i range = TS->shaped_text_get_range(lines_rid[i]);
+			remaining -= range.y - range.x + range.x - last_end;
+			last_end = range.y;
+			if (remaining <= 0) {
+				max_lines_visible = i + 1;
+				lines_dirty = true;
+				break;
+			}
+		}
 	}
 }
 
