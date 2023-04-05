@@ -116,6 +116,7 @@ public:
 	float get_width() const;
 
 	void set_max_lines_visible(int p_lines);
+	void set_max_lines_visible_by_visible_characters(int p_characters);
 	int get_max_lines_visible() const;
 
 	Size2 get_non_wrapped_size() const;
@@ -123,6 +124,7 @@ public:
 	Size2 get_size() const;
 
 	int get_line_count() const;
+	int get_visible_line_count() const;
 
 	Array get_line_objects(int p_line) const;
 	Rect2 get_line_object_rect(int p_line, Variant p_key) const;

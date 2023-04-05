@@ -116,7 +116,7 @@ private:
 		Line() { text_buf.instantiate(); }
 
 		_FORCE_INLINE_ float get_height(float line_separation) const {
-			return offset.y + text_buf->get_size().y + text_buf->get_line_count() * line_separation;
+			return offset.y + text_buf->get_size().y + text_buf->get_visible_line_count() * line_separation;
 		}
 	};
 

@@ -440,6 +440,13 @@ float RichTextLabel::_resize_line(ItemFrame *p_frame, int p_line, const Ref<Font
 		}
 	}
 
+	if (visible_characters >= 0) {
+		l.text_buf->set_max_lines_visible_by_visible_characters(MAX(visible_characters - l.char_offset, 0));
+	}
+	else {
+		l.text_buf->set_max_lines_visible(-1);
+	}
+
 	l.offset.y = p_h;
 	return _calculate_line_vertical_offset(l);
 }
@@ -730,6 +737,13 @@ float RichTextLabel::_shape_line(ItemFrame *p_frame, int p_line, const Ref<Font>
 			default:
 				break;
 		}
+	}
+
+	if (visible_characters >= 0) {
+		l.text_buf->set_max_lines_visible_by_visible_characters(MAX(visible_characters - l.char_offset, 0));
+	}
+	else {
+		l.text_buf->set_max_lines_visible(-1);
 	}
 
 	// Apply BiDi override.
@@ -5250,7 +5264,7 @@ void RichTextLabel::set_visible_ratio(float p_ratio) {
 			visible_ratio = p_ratio;
 		}
 
-		if (visible_chars_behavior == TextServer::VC_CHARS_BEFORE_SHAPING) {
+		if (visible_chars_behavior == TextServer::VC_CHARS_BEFORE_SHAPING || visible_chars_behavior == TextServer::VC_CHARS_AFTER_SHAPING) {
 			main->first_invalid_line.store(0); // Invalidate ALL.
 			_validate_line_caches();
 		}
@@ -5553,7 +5567,7 @@ void RichTextLabel::set_visible_characters(int p_visible) {
 				visible_ratio = (float)p_visible / (float)total_char_count;
 			}
 		}
-		if (visible_chars_behavior == TextServer::VC_CHARS_BEFORE_SHAPING) {
+		if (visible_chars_behavior == TextServer::VC_CHARS_BEFORE_SHAPING || visible_chars_behavior == TextServer::VC_CHARS_AFTER_SHAPING) {
 			main->first_invalid_line.store(0); //invalidate ALL
 			_validate_line_caches();
 		}
