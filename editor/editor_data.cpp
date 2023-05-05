@@ -622,7 +622,7 @@ void EditorData::remove_scene(int p_idx) {
 	}
 
 	if (!edited_scene[p_idx].path.is_empty()) {
-		ScriptEditor::get_singleton()->close_builtin_scripts_from_scene(edited_scene[p_idx].path);
+		EditorNode::get_singleton()->emit_signal("scene_closed", edited_scene[p_idx].path);
 	}
 
 	undo_redo_manager->discard_history(edited_scene[p_idx].history_id);
@@ -711,6 +711,16 @@ bool EditorData::check_and_update_scene(int p_idx) {
 
 int EditorData::get_edited_scene() const {
 	return current_edited_scene;
+}
+
+int EditorData::get_edited_scene_from_path(const String &p_path) const {
+	for (int i = 0; i < edited_scene.size(); i++) {
+		if (edited_scene[i].path == p_path) {
+			return i;
+		}
+	}
+
+	return -1;
 }
 
 void EditorData::set_edited_scene(int p_idx) {
