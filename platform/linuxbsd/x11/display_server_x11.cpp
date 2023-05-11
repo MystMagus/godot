@@ -186,6 +186,7 @@ bool DisplayServerX11::_refresh_device_info() {
 	xi.absolute_devices.clear();
 	xi.touch_devices.clear();
 	xi.pen_inverted_devices.clear();
+	xi.last_relative_time = 0;
 
 	int dev_count;
 	XIDeviceInfo *info = XIQueryDevice(x11_display, XIAllDevices, &dev_count);
@@ -3497,8 +3498,8 @@ void DisplayServerX11::_window_changed(XEvent *event) {
 
 	// Query display server about a possible new window state.
 	wd.fullscreen = _window_fullscreen_check(window_id);
-	wd.minimized = _window_minimize_check(window_id);
-	wd.maximized = _window_maximize_check(window_id, "_NET_WM_STATE");
+	wd.maximized = _window_maximize_check(window_id, "_NET_WM_STATE") && !wd.fullscreen;
+	wd.minimized = _window_minimize_check(window_id) && !wd.fullscreen && !wd.maximized;
 
 	// Readjusting the window position if the window is being reparented by the window manager for decoration
 	Window root, parent, *children;
