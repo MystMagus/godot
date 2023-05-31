@@ -33,6 +33,7 @@
 #include "core/input/input.h"
 #include "core/io/marshalls.h"
 #include "editor/editor_properties.h"
+#include "editor/editor_properties_vector.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "editor/gui/editor_spin_slider.h"
@@ -250,7 +251,7 @@ void EditorPropertyArray::_object_id_selected(const StringName &p_property, Obje
 }
 
 void EditorPropertyArray::update_property() {
-	Variant array = get_edited_object()->get(get_edited_property());
+	Variant array = get_edited_property_value();
 
 	String array_type_name = Variant::get_type_name(array_type);
 	if (array_type == Variant::ARRAY && subtype != Variant::NIL) {
@@ -568,7 +569,7 @@ void EditorPropertyArray::_notification(int p_what) {
 }
 
 void EditorPropertyArray::_edit_pressed() {
-	Variant array = get_edited_object()->get(get_edited_property());
+	Variant array = get_edited_property_value();
 	if (!array.is_array() && edit->is_pressed()) {
 		initialize_array(array);
 		get_edited_object()->set(get_edited_property(), array);
@@ -808,7 +809,7 @@ void EditorPropertyDictionary::setup(PropertyHint p_hint) {
 }
 
 void EditorPropertyDictionary::update_property() {
-	Variant updated_val = get_edited_object()->get(get_edited_property());
+	Variant updated_val = get_edited_property_value();
 
 	if (updated_val.get_type() == Variant::NIL) {
 		edit->set_text(TTR("Dictionary (Nil)")); // This provides symmetry with the array property.
@@ -1217,7 +1218,7 @@ void EditorPropertyDictionary::_notification(int p_what) {
 }
 
 void EditorPropertyDictionary::_edit_pressed() {
-	Variant prop_val = get_edited_object()->get(get_edited_property());
+	Variant prop_val = get_edited_property_value();
 	if (prop_val.get_type() == Variant::NIL && edit->is_pressed()) {
 		VariantInternal::initialize(&prop_val, Variant::DICTIONARY);
 		get_edited_object()->set(get_edited_property(), prop_val);
@@ -1299,7 +1300,7 @@ void EditorPropertyLocalizableString::_remove_item(Object *p_button, int p_index
 }
 
 void EditorPropertyLocalizableString::update_property() {
-	Variant updated_val = get_edited_object()->get(get_edited_property());
+	Variant updated_val = get_edited_property_value();
 
 	if (updated_val.get_type() == Variant::NIL) {
 		edit->set_text(TTR("Localizable String (Nil)")); // This provides symmetry with the array property.
@@ -1431,7 +1432,7 @@ void EditorPropertyLocalizableString::_notification(int p_what) {
 }
 
 void EditorPropertyLocalizableString::_edit_pressed() {
-	Variant prop_val = get_edited_object()->get(get_edited_property());
+	Variant prop_val = get_edited_property_value();
 	if (prop_val.get_type() == Variant::NIL && edit->is_pressed()) {
 		VariantInternal::initialize(&prop_val, Variant::DICTIONARY);
 		get_edited_object()->set(get_edited_property(), prop_val);
