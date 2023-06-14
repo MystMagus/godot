@@ -1692,6 +1692,9 @@ void GDScriptAnalyzer::resolve_function_body(GDScriptParser::FunctionNode *p_fun
 	GDScriptParser::FunctionNode *previous_function = parser->current_function;
 	parser->current_function = p_function;
 
+	bool previous_static_context = static_context;
+	static_context = p_function->is_static;
+
 	resolve_suite(p_function->body);
 
 	if (!p_function->get_datatype().is_hard_type() && p_function->body->get_datatype().is_set()) {
@@ -1707,6 +1710,7 @@ void GDScriptAnalyzer::resolve_function_body(GDScriptParser::FunctionNode *p_fun
 	parser->ignored_warnings = previously_ignored_warnings;
 #endif
 	parser->current_function = previous_function;
+	static_context = previous_static_context;
 }
 
 void GDScriptAnalyzer::decide_suite_type(GDScriptParser::Node *p_suite, GDScriptParser::Node *p_statement) {
@@ -2442,6 +2446,10 @@ void GDScriptAnalyzer::update_array_literal_element_type(GDScriptParser::ArrayNo
 			continue;
 		}
 		if (!is_type_compatible(p_element_type, element_type, true, p_array)) {
+			if (is_type_compatible(element_type, p_element_type)) {
+				mark_node_unsafe(element_node);
+				continue;
+			}
 			push_error(vformat(R"(Cannot have an element of type "%s" in an array of type "Array[%s]".)", element_type.to_string(), p_element_type.to_string()), element_node);
 			return;
 		}

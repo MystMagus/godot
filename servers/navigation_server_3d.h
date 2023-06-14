@@ -80,6 +80,9 @@ public:
 	/// Returns the map cell size.
 	virtual real_t map_get_cell_size(RID p_map) const = 0;
 
+	virtual void map_set_cell_height(RID p_map, real_t p_height) = 0;
+	virtual real_t map_get_cell_height(RID p_map) const = 0;
+
 	virtual void map_set_use_edge_connections(RID p_map, bool p_enabled) = 0;
 	virtual bool map_get_use_edge_connections(RID p_map) const = 0;
 
@@ -260,7 +263,13 @@ public:
 	virtual RID obstacle_create() = 0;
 	virtual void obstacle_set_map(RID p_obstacle, RID p_map) = 0;
 	virtual RID obstacle_get_map(RID p_obstacle) const = 0;
+	virtual void obstacle_set_avoidance_enabled(RID p_obstacle, bool p_enabled) = 0;
+	virtual bool obstacle_get_avoidance_enabled(RID p_obstacle) const = 0;
+	virtual void obstacle_set_use_3d_avoidance(RID p_obstacle, bool p_enabled) = 0;
+	virtual bool obstacle_get_use_3d_avoidance(RID p_obstacle) const = 0;
+	virtual void obstacle_set_radius(RID p_obstacle, real_t p_radius) = 0;
 	virtual void obstacle_set_height(RID p_obstacle, real_t p_height) = 0;
+	virtual void obstacle_set_velocity(RID p_obstacle, Vector3 p_velocity) = 0;
 	virtual void obstacle_set_position(RID p_obstacle, Vector3 p_position) = 0;
 	virtual void obstacle_set_vertices(RID p_obstacle, const Vector<Vector3> &p_vertices) = 0;
 	virtual void obstacle_set_avoidance_layers(RID p_obstacle, uint32_t p_layers) = 0;

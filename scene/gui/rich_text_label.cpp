@@ -2736,7 +2736,6 @@ void RichTextLabel::_thread_function(void *p_userdata) {
 	_process_line_caches();
 	updating.store(false);
 	call_deferred(SNAME("thread_end"));
-	set_current_thread_safe_for_nodes(false);
 }
 
 void RichTextLabel::_thread_end() {
@@ -2756,7 +2755,16 @@ void RichTextLabel::_stop_thread() {
 	}
 }
 
+int RichTextLabel::get_pending_paragraphs() const {
+	int to_line = main->first_invalid_line.load();
+	int lines = main->lines.size();
+
+	return lines - to_line;
+}
+
 bool RichTextLabel::is_ready() const {
+	const_cast<RichTextLabel *>(this)->_validate_line_caches();
+
 	if (updating.load()) {
 		return false;
 	}
@@ -3192,7 +3200,8 @@ bool RichTextLabel::remove_paragraph(const int p_paragraph) {
 		main->lines[0].from = main;
 	}
 
-	main->first_invalid_line.store(0);
+	int to_line = main->first_invalid_line.load();
+	main->first_invalid_line.store(MIN(to_line, p_paragraph));
 	queue_redraw();
 
 	return true;
@@ -3613,7 +3622,7 @@ void RichTextLabel::pop() {
 	_stop_thread();
 	MutexLock data_lock(data_mutex);
 
-	ERR_FAIL_COND(!current->parent);
+	ERR_FAIL_NULL(current->parent);
 
 	if (current->type == ITEM_FRAME) {
 		current_frame = static_cast<ItemFrame *>(current)->parent_frame;
@@ -4483,7 +4492,7 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 
 			int fnt_size = -1;
 			for (int i = 1; i < subtag.size(); i++) {
-				Vector<String> subtag_a = subtag[i].split("=", true, 2);
+				Vector<String> subtag_a = subtag[i].split("=", true, 1);
 				_normalize_subtags(subtag_a);
 
 				if (subtag_a.size() == 2) {
