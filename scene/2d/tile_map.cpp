@@ -1318,7 +1318,11 @@ void TileMap::_rendering_update_dirty_quadrants(SelfList<TileMapQuadrant>::List 
 					}
 
 					// Drawing the tile in the canvas item.
-					draw_tile(ci, E_cell.key - tile_position, tile_set, c.source_id, c.get_atlas_coords(), c.alternative_tile, -1, get_self_modulate(), tile_data);
+					Color color = get_self_modulate();
+					if(!c.visible) {
+						color.a = 0;
+					}
+					draw_tile(ci, E_cell.key - tile_position, tile_set, c.source_id, c.get_atlas_coords(), c.alternative_tile, -1, color, tile_data);
 
 					// --- Occluders ---
 					for (int i = 0; i < tile_set->get_occlusion_layers_count(); i++) {
@@ -2102,7 +2106,7 @@ void TileMap::_scenes_draw_quadrant_debug(TileMapQuadrant *p_quadrant) {
 	}
 }
 
-void TileMap::set_cell(int p_layer, const Vector2i &p_coords, int p_source_id, const Vector2i p_atlas_coords, int p_alternative_tile) {
+void TileMap::set_cell(int p_layer, const Vector2i &p_coords, int p_source_id, const Vector2i p_atlas_coords, int p_alternative_tile, bool p_visible) {
 	ERR_FAIL_INDEX(p_layer, (int)layers.size());
 
 	// Set the current cell tile (using integer position).
@@ -2173,6 +2177,7 @@ void TileMap::set_cell(int p_layer, const Vector2i &p_coords, int p_source_id, c
 		c.source_id = source_id;
 		c.set_atlas_coords(atlas_coords);
 		c.alternative_tile = alternative_tile;
+		c.visible = p_visible;
 
 		_make_quadrant_dirty(Q);
 		used_rect_cache_dirty = true;
@@ -2252,6 +2257,41 @@ TileData *TileMap::get_cell_tile_data(int p_layer, const Vector2i &p_coords, boo
 	}
 
 	return nullptr;
+}
+
+void TileMap::set_cell_visible(int p_layer, const Vector2i &p_coords, bool p_visible) {
+	ERR_FAIL_INDEX(p_layer, (int)layers.size());
+
+	// Set the current cell tile (using integer position).
+	HashMap<Vector2i, TileMapCell> &tile_map = layers[p_layer].tile_map;
+	Vector2i pk(p_coords);
+	HashMap<Vector2i, TileMapCell>::Iterator E = tile_map.find(pk);
+
+	if (!E || E->value.visible == p_visible) {
+		return; // Nothing to do, the tile is empty or already in the right state.
+	}
+	E->value.visible = p_visible;
+
+	// Get the quadrant
+	Vector2i qk = _coords_to_quadrant_coords(p_layer, pk);
+
+	HashMap<Vector2i, TileMapQuadrant>::Iterator Q = layers[p_layer].quadrant_map.find(qk);
+	ERR_FAIL_COND(!Q);
+	_make_quadrant_dirty(Q);
+}
+
+bool TileMap::get_cell_visible(int p_layer, const Vector2i &p_coords) {
+	ERR_FAIL_INDEX_V(p_layer, (int)layers.size(), TileSetSource::INVALID_TILE_ALTERNATIVE);
+
+	// Get a cell source id from position
+	const HashMap<Vector2i, TileMapCell> &tile_map = layers[p_layer].tile_map;
+	HashMap<Vector2i, TileMapCell>::ConstIterator E = tile_map.find(p_coords);
+
+	if (!E) {
+		return false;
+	}
+
+	return E->value.visible;
 }
 
 Ref<TileMapPattern> TileMap::get_pattern(int p_layer, TypedArray<Vector2i> p_coords_array) {
@@ -2789,7 +2829,7 @@ HashMap<Vector2i, TileSet::TerrainsPattern> TileMap::terrain_fill_pattern(int p_
 	return output;
 }
 
-void TileMap::set_cells_terrain_connect(int p_layer, TypedArray<Vector2i> p_cells, int p_terrain_set, int p_terrain, bool p_ignore_empty_terrains) {
+void TileMap::set_cells_terrain_connect(int p_layer, TypedArray<Vector2i> p_cells, int p_terrain_set, int p_terrain, bool p_ignore_empty_terrains, bool p_visible) {
 	ERR_FAIL_COND(!tile_set.is_valid());
 	ERR_FAIL_INDEX(p_layer, (int)layers.size());
 	ERR_FAIL_INDEX(p_terrain_set, tile_set->get_terrain_sets_count());
@@ -2805,7 +2845,7 @@ void TileMap::set_cells_terrain_connect(int p_layer, TypedArray<Vector2i> p_cell
 		if (painted_set.has(kv.key)) {
 			// Paint a random tile with the correct terrain for the painted path.
 			TileMapCell c = tile_set->get_random_tile_from_terrains_pattern(p_terrain_set, kv.value);
-			set_cell(p_layer, kv.key, c.source_id, c.get_atlas_coords(), c.alternative_tile);
+			set_cell(p_layer, kv.key, c.source_id, c.get_atlas_coords(), c.alternative_tile, p_visible);
 		} else {
 			// Avoids updating the painted path from the output if the new pattern is the same as before.
 			TileSet::TerrainsPattern in_map_terrain_pattern = TileSet::TerrainsPattern(*tile_set, p_terrain_set);
@@ -2823,13 +2863,13 @@ void TileMap::set_cells_terrain_connect(int p_layer, TypedArray<Vector2i> p_cell
 			}
 			if (in_map_terrain_pattern != kv.value) {
 				TileMapCell c = tile_set->get_random_tile_from_terrains_pattern(p_terrain_set, kv.value);
-				set_cell(p_layer, kv.key, c.source_id, c.get_atlas_coords(), c.alternative_tile);
+				set_cell(p_layer, kv.key, c.source_id, c.get_atlas_coords(), c.alternative_tile, p_visible);
 			}
 		}
 	}
 }
 
-void TileMap::set_cells_terrain_path(int p_layer, TypedArray<Vector2i> p_path, int p_terrain_set, int p_terrain, bool p_ignore_empty_terrains) {
+void TileMap::set_cells_terrain_path(int p_layer, TypedArray<Vector2i> p_path, int p_terrain_set, int p_terrain, bool p_ignore_empty_terrains, bool p_visible) {
 	ERR_FAIL_COND(!tile_set.is_valid());
 	ERR_FAIL_INDEX(p_layer, (int)layers.size());
 	ERR_FAIL_INDEX(p_terrain_set, tile_set->get_terrain_sets_count());
@@ -2846,7 +2886,7 @@ void TileMap::set_cells_terrain_path(int p_layer, TypedArray<Vector2i> p_path, i
 		if (painted_set.has(kv.key)) {
 			// Paint a random tile with the correct terrain for the painted path.
 			TileMapCell c = tile_set->get_random_tile_from_terrains_pattern(p_terrain_set, kv.value);
-			set_cell(p_layer, kv.key, c.source_id, c.get_atlas_coords(), c.alternative_tile);
+			set_cell(p_layer, kv.key, c.source_id, c.get_atlas_coords(), c.alternative_tile, p_visible);
 		} else {
 			// Avoids updating the painted path from the output if the new pattern is the same as before.
 			TileSet::TerrainsPattern in_map_terrain_pattern = TileSet::TerrainsPattern(*tile_set, p_terrain_set);
@@ -2864,7 +2904,7 @@ void TileMap::set_cells_terrain_path(int p_layer, TypedArray<Vector2i> p_path, i
 			}
 			if (in_map_terrain_pattern != kv.value) {
 				TileMapCell c = tile_set->get_random_tile_from_terrains_pattern(p_terrain_set, kv.value);
-				set_cell(p_layer, kv.key, c.source_id, c.get_atlas_coords(), c.alternative_tile);
+				set_cell(p_layer, kv.key, c.source_id, c.get_atlas_coords(), c.alternative_tile, p_visible);
 			}
 		}
 	}
@@ -4154,12 +4194,14 @@ void TileMap::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_navigation_map", "layer", "map"), &TileMap::set_navigation_map);
 	ClassDB::bind_method(D_METHOD("get_navigation_map", "layer"), &TileMap::get_navigation_map);
 
-	ClassDB::bind_method(D_METHOD("set_cell", "layer", "coords", "source_id", "atlas_coords", "alternative_tile"), &TileMap::set_cell, DEFVAL(TileSet::INVALID_SOURCE), DEFVAL(TileSetSource::INVALID_ATLAS_COORDS), DEFVAL(0));
+	ClassDB::bind_method(D_METHOD("set_cell", "layer", "coords", "source_id", "atlas_coords", "alternative_tile", "visible"), &TileMap::set_cell, DEFVAL(TileSet::INVALID_SOURCE), DEFVAL(TileSetSource::INVALID_ATLAS_COORDS), DEFVAL(0), DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("erase_cell", "layer", "coords"), &TileMap::erase_cell);
 	ClassDB::bind_method(D_METHOD("get_cell_source_id", "layer", "coords", "use_proxies"), &TileMap::get_cell_source_id, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("get_cell_atlas_coords", "layer", "coords", "use_proxies"), &TileMap::get_cell_atlas_coords, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("get_cell_alternative_tile", "layer", "coords", "use_proxies"), &TileMap::get_cell_alternative_tile, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("get_cell_tile_data", "layer", "coords", "use_proxies"), &TileMap::get_cell_tile_data, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("set_cell_visible", "layer", "coords", "visible"), &TileMap::set_cell_visible, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("get_cell_visible", "layer", "coords"), &TileMap::get_cell_source_id);
 
 	ClassDB::bind_method(D_METHOD("get_coords_for_body_rid", "body"), &TileMap::get_coords_for_body_rid);
 	ClassDB::bind_method(D_METHOD("get_layer_for_body_rid", "body"), &TileMap::get_layer_for_body_rid);
@@ -4168,8 +4210,8 @@ void TileMap::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("map_pattern", "position_in_tilemap", "coords_in_pattern", "pattern"), &TileMap::map_pattern);
 	ClassDB::bind_method(D_METHOD("set_pattern", "layer", "position", "pattern"), &TileMap::set_pattern);
 
-	ClassDB::bind_method(D_METHOD("set_cells_terrain_connect", "layer", "cells", "terrain_set", "terrain", "ignore_empty_terrains"), &TileMap::set_cells_terrain_connect, DEFVAL(true));
-	ClassDB::bind_method(D_METHOD("set_cells_terrain_path", "layer", "path", "terrain_set", "terrain", "ignore_empty_terrains"), &TileMap::set_cells_terrain_path, DEFVAL(true));
+	ClassDB::bind_method(D_METHOD("set_cells_terrain_connect", "layer", "cells", "terrain_set", "terrain", "ignore_empty_terrains", "visible"), &TileMap::set_cells_terrain_connect, DEFVAL(true), DEFVAL(true));
+	ClassDB::bind_method(D_METHOD("set_cells_terrain_path", "layer", "path", "terrain_set", "terrain", "ignore_empty_terrains", "visible"), &TileMap::set_cells_terrain_path, DEFVAL(true), DEFVAL(true));
 
 	ClassDB::bind_method(D_METHOD("fix_invalid_tiles"), &TileMap::fix_invalid_tiles);
 	ClassDB::bind_method(D_METHOD("clear_layer", "layer"), &TileMap::clear_layer);

@@ -67,6 +67,7 @@ union TileMapCell {
 		int16_t coord_x : 16;
 		int16_t coord_y : 16;
 		int32_t alternative_tile : 16;
+		bool visible : true;
 	};
 
 	uint64_t _u64t;
@@ -75,10 +76,11 @@ union TileMapCell {
 		return hash_one_uint64(p_hash._u64t);
 	}
 
-	TileMapCell(int p_source_id = -1, Vector2i p_atlas_coords = Vector2i(-1, -1), int p_alternative_tile = -1) { // default are INVALID_SOURCE, INVALID_ATLAS_COORDS, INVALID_TILE_ALTERNATIVE
+	TileMapCell(int p_source_id = -1, Vector2i p_atlas_coords = Vector2i(-1, -1), int p_alternative_tile = -1, bool p_visible = true) { // default are INVALID_SOURCE, INVALID_ATLAS_COORDS, INVALID_TILE_ALTERNATIVE
 		source_id = p_source_id;
 		set_atlas_coords(p_atlas_coords);
 		alternative_tile = p_alternative_tile;
+		visible = p_visible;
 	}
 
 	Vector2i get_atlas_coords() const {
@@ -131,7 +133,7 @@ protected:
 	static void _bind_methods();
 
 public:
-	void set_cell(const Vector2i &p_coords, int p_source_id, const Vector2i p_atlas_coords, int p_alternative_tile = 0);
+	void set_cell(const Vector2i &p_coords, int p_source_id, const Vector2i p_atlas_coords, int p_alternative_tile = 0, bool p_visible = true);
 	bool has_cell(const Vector2i &p_coords) const;
 	void remove_cell(const Vector2i &p_coords, bool p_update_size = true);
 	int get_cell_source_id(const Vector2i &p_coords) const;
