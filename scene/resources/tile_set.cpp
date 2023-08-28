@@ -100,11 +100,11 @@ Vector<int> TileMapPattern::_get_tile_data() const {
 	return data;
 }
 
-void TileMapPattern::set_cell(const Vector2i &p_coords, int p_source_id, const Vector2i p_atlas_coords, int p_alternative_tile) {
+void TileMapPattern::set_cell(const Vector2i &p_coords, int p_source_id, const Vector2i p_atlas_coords, int p_alternative_tile, bool p_visible) {
 	ERR_FAIL_COND_MSG(p_coords.x < 0 || p_coords.y < 0, vformat("Cannot set cell with negative coords in a TileMapPattern. Wrong coords: %s", p_coords));
 
 	size = size.max(p_coords + Vector2i(1, 1));
-	pattern[p_coords] = TileMapCell(p_source_id, p_atlas_coords, p_alternative_tile);
+	pattern[p_coords] = TileMapCell(p_source_id, p_atlas_coords, p_alternative_tile, p_visible);
 	emit_changed();
 }
 
@@ -206,7 +206,7 @@ void TileMapPattern::_get_property_list(List<PropertyInfo> *p_list) const {
 }
 
 void TileMapPattern::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("set_cell", "coords", "source_id", "atlas_coords", "alternative_tile"), &TileMapPattern::set_cell, DEFVAL(TileSet::INVALID_SOURCE), DEFVAL(TileSetSource::INVALID_ATLAS_COORDS), DEFVAL(TileSetSource::INVALID_TILE_ALTERNATIVE));
+	ClassDB::bind_method(D_METHOD("set_cell", "coords", "source_id", "atlas_coords", "alternative_tile", "visible"), &TileMapPattern::set_cell, DEFVAL(TileSet::INVALID_SOURCE), DEFVAL(TileSetSource::INVALID_ATLAS_COORDS), DEFVAL(TileSetSource::INVALID_TILE_ALTERNATIVE), DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("has_cell", "coords"), &TileMapPattern::has_cell);
 	ClassDB::bind_method(D_METHOD("remove_cell", "coords", "update_size"), &TileMapPattern::remove_cell);
 	ClassDB::bind_method(D_METHOD("get_cell_source_id", "coords"), &TileMapPattern::get_cell_source_id);
