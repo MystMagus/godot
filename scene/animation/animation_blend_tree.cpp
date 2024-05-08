@@ -1347,6 +1347,13 @@ void AnimationNodeBlendTree::disconnect_node(const StringName &p_node, int p_inp
 	nodes[p_node].connections.write[p_input_index] = StringName();
 }
 
+bool AnimationNodeBlendTree::NodeConnection::operator<(const NodeConnection& other) const {
+	if(input_node == other.input_node) {
+		return compare(output_node, other.output_node);
+	}
+	return compare(input_node, other.input_node);
+}
+
 AnimationNodeBlendTree::ConnectionError AnimationNodeBlendTree::can_connect_node(const StringName &p_input_node, int p_input_index, const StringName &p_output_node) const {
 	if (!nodes.has(p_output_node) || p_output_node == SceneStringNames::get_singleton()->output) {
 		return CONNECTION_ERROR_NO_OUTPUT;
@@ -1394,6 +1401,8 @@ void AnimationNodeBlendTree::get_node_connections(List<NodeConnection> *r_connec
 			}
 		}
 	}
+	
+	r_connections->sort();
 }
 
 String AnimationNodeBlendTree::get_caption() const {
