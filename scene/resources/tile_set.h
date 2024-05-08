@@ -806,6 +806,9 @@ private:
 	const TileSet *tile_set = nullptr;
 	bool allow_transform = true;
 
+	// Animation
+	real_t animation_time_offset = 0.0;
+
 	// Rendering
 	bool flip_h = false;
 	bool flip_v = false;
@@ -880,6 +883,10 @@ public:
 
 	// To duplicate a TileData object, needed for runtiume update.
 	TileData *duplicate();
+
+	// Animation
+	void set_animation_time_offset(real_t p_offset);
+	real_t get_animation_time_offset() const;
 
 	// Rendering
 	void set_flip_h(bool p_flip_h);

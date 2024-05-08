@@ -5268,6 +5268,8 @@ TileData *TileData::duplicate() {
 
 	output->allow_transform = allow_transform;
 
+	// Animation
+	output->animation_time_offset = animation_time_offset;
 	// Rendering
 	output->flip_h = flip_h;
 	output->flip_v = flip_v;
@@ -5291,6 +5293,16 @@ TileData *TileData::duplicate() {
 	output->custom_data = custom_data;
 
 	return output;
+}
+
+// Animation
+void TileData::set_animation_time_offset(real_t p_offset) {
+	animation_time_offset = p_offset;
+	emit_signal(SNAME("changed"));
+}
+
+real_t TileData::get_animation_time_offset() const {
+	return animation_time_offset;
 }
 
 // Rendering
@@ -5923,6 +5935,10 @@ void TileData::_get_property_list(List<PropertyInfo> *p_list) const {
 }
 
 void TileData::_bind_methods() {
+	// Animation.
+	ClassDB::bind_method(D_METHOD("set_animation_time_offset", "animation_time_offset"), &TileData::set_animation_time_offset);
+	ClassDB::bind_method(D_METHOD("get_animation_time_offset"), &TileData::get_animation_time_offset);
+
 	// Rendering.
 	ClassDB::bind_method(D_METHOD("set_flip_h", "flip_h"), &TileData::set_flip_h);
 	ClassDB::bind_method(D_METHOD("get_flip_h"), &TileData::get_flip_h);
@@ -5981,6 +5997,9 @@ void TileData::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_custom_data", "layer_name"), &TileData::get_custom_data);
 	ClassDB::bind_method(D_METHOD("set_custom_data_by_layer_id", "layer_id", "value"), &TileData::set_custom_data_by_layer_id);
 	ClassDB::bind_method(D_METHOD("get_custom_data_by_layer_id", "layer_id"), &TileData::get_custom_data_by_layer_id);
+
+	ADD_GROUP("Animation", "");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "animation_time_offset"), "set_animation_time_offset", "get_animation_time_offset");
 
 	ADD_GROUP("Rendering", "");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "flip_h"), "set_flip_h", "get_flip_h");

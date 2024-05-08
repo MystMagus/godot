@@ -356,17 +356,17 @@ void TileMapLayer::_rendering_update(bool p_force_cleanup) {
 
 					const Vector2 local_tile_pos = tile_map_node->map_to_local(cell_data.coords);
 
-					// Random animation offset.
-					real_t random_animation_offset = 0.0;
+					// Animation offset.
+					real_t animation_offset = tile_data->get_animation_time_offset();
 					if (atlas_source->get_tile_animation_mode(cell_data.cell.get_atlas_coords()) != TileSetAtlasSource::TILE_ANIMATION_MODE_DEFAULT) {
 						Array to_hash;
 						to_hash.push_back(local_tile_pos);
 						to_hash.push_back(get_instance_id()); // Use instance id as a random hash
-						random_animation_offset = RandomPCG(to_hash.hash()).randf();
+						animation_offset = RandomPCG(to_hash.hash()).randf();
 					}
 
 					// Drawing the tile in the canvas item.
-					tile_map_node->draw_tile(ci, local_tile_pos - rendering_quadrant->canvas_items_position, tile_set, cell_data.cell.source_id, cell_data.cell.get_atlas_coords(), cell_data.cell.alternative_tile, -1, tile_map_node->get_self_modulate(), tile_data, random_animation_offset);
+					tile_map_node->draw_tile(ci, local_tile_pos - rendering_quadrant->canvas_items_position, tile_set, cell_data.cell.source_id, cell_data.cell.get_atlas_coords(), cell_data.cell.alternative_tile, -1, tile_map_node->get_self_modulate(), tile_data, animation_offset);
 				}
 			} else {
 				// Free the quadrant.
