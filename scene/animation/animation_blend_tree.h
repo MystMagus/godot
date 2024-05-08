@@ -439,6 +439,9 @@ public:
 		StringName input_node;
 		int input_index = 0;
 		StringName output_node;
+		StringName::AlphCompare compare;
+		
+		bool operator<(const NodeConnection& other) const;
 	};
 
 	ConnectionError can_connect_node(const StringName &p_input_node, int p_input_index, const StringName &p_output_node) const;
