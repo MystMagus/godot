@@ -365,6 +365,14 @@ void AnimatedSprite2D::set_frame_and_progress(int p_frame, real_t p_progress) {
 	emit_signal(SceneStringNames::get_singleton()->frame_changed);
 }
 
+void AnimatedSprite2D::set_reset_frame_progress_on_animation_change(bool p_reset) {
+	reset_frame_progress_on_animation_change = p_reset;
+}
+
+bool AnimatedSprite2D::get_reset_frame_progress_on_animation_change() const {
+	return reset_frame_progress_on_animation_change;
+}
+
 void AnimatedSprite2D::set_speed_scale(float p_speed_scale) {
 	speed_scale = p_speed_scale;
 }
@@ -538,10 +546,12 @@ void AnimatedSprite2D::set_animation(const StringName &p_name) {
 		ERR_FAIL_MSG(vformat("There is no animation with name '%s'.", p_name));
 	}
 
-	if (signbit(get_playing_speed())) {
-		set_frame_and_progress(frame_count - 1, 1.0);
-	} else {
-		set_frame_and_progress(0, 0.0);
+	if (reset_frame_progress_on_animation_change || frame_count < frame) {
+		if (signbit(get_playing_speed())) {
+			set_frame_and_progress(frame_count - 1, 1.0);
+		} else {
+			set_frame_and_progress(0, 0.0);
+		}
 	}
 
 	notify_property_list_changed();
@@ -619,6 +629,9 @@ void AnimatedSprite2D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_frame_and_progress", "frame", "progress"), &AnimatedSprite2D::set_frame_and_progress);
 
+	ClassDB::bind_method(D_METHOD("set_reset_frame_progress_on_animation_change", "reset"), &AnimatedSprite2D::set_reset_frame_progress_on_animation_change);
+	ClassDB::bind_method(D_METHOD("get_reset_frame_progress_on_animation_change"), &AnimatedSprite2D::get_reset_frame_progress_on_animation_change);
+
 	ClassDB::bind_method(D_METHOD("set_speed_scale", "speed_scale"), &AnimatedSprite2D::set_speed_scale);
 	ClassDB::bind_method(D_METHOD("get_speed_scale"), &AnimatedSprite2D::get_speed_scale);
 	ClassDB::bind_method(D_METHOD("get_playing_speed"), &AnimatedSprite2D::get_playing_speed);
@@ -635,6 +648,7 @@ void AnimatedSprite2D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "autoplay", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_autoplay", "get_autoplay");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "frame"), "set_frame", "get_frame");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "frame_progress", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_frame_progress", "get_frame_progress");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "reset_frame_progress_on_animation_change"), "set_reset_frame_progress_on_animation_change", "get_reset_frame_progress_on_animation_change");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "speed_scale"), "set_speed_scale", "get_speed_scale");
 	ADD_GROUP("Offset", "");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "centered"), "set_centered", "is_centered");

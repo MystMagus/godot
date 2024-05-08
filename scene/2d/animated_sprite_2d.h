@@ -45,6 +45,7 @@ class AnimatedSprite2D : public Node2D {
 	int frame = 0;
 	float speed_scale = 1.0;
 	float custom_speed_scale = 1.0;
+	bool reset_frame_progress_on_animation_change = true;
 
 	bool centered = true;
 	Point2 offset;
@@ -108,6 +109,9 @@ public:
 	real_t get_frame_progress() const;
 
 	void set_frame_and_progress(int p_frame, real_t p_progress);
+
+	void set_reset_frame_progress_on_animation_change(bool p_reset);
+	bool get_reset_frame_progress_on_animation_change() const;
 
 	void set_speed_scale(float p_speed_scale);
 	float get_speed_scale() const;
