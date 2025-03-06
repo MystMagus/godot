@@ -628,9 +628,14 @@ bool ScrollBar::is_smooth_scroll_enabled() const {
 	return smooth_scroll_enabled;
 }
 
+bool ScrollBar::is_being_dragged() const {
+	return drag.active || drag_node_touching;
+}
+
 void ScrollBar::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_custom_step", "step"), &ScrollBar::set_custom_step);
 	ClassDB::bind_method(D_METHOD("get_custom_step"), &ScrollBar::get_custom_step);
+	ClassDB::bind_method(D_METHOD("is_being_dragged"), &ScrollBar::is_being_dragged);
 
 	ADD_SIGNAL(MethodInfo("scrolling"));
 

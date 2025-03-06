@@ -124,6 +124,8 @@ public:
 	void set_smooth_scroll_enabled(bool p_enable);
 	bool is_smooth_scroll_enabled() const;
 
+	bool is_being_dragged() const;
+
 	virtual Size2 get_minimum_size() const override;
 	ScrollBar(Orientation p_orientation = VERTICAL);
 	~ScrollBar();
