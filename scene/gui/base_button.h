@@ -48,6 +48,7 @@ public:
 private:
 	BitField<MouseButtonMask> button_mask = MouseButtonMask::LEFT;
 	bool toggle_mode = false;
+	bool enable_hover_pressed = false;
 	bool shortcut_in_tooltip = true;
 	bool was_mouse_pressed = false;
 	bool keep_pressed_outside = false;
@@ -118,6 +119,9 @@ public:
 
 	void set_disabled(bool p_disabled);
 	bool is_disabled() const;
+
+	void set_enable_hover_pressed(bool p_on);
+	bool is_enable_hover_pressed() const;
 
 	void set_action_mode(ActionMode p_mode);
 	ActionMode get_action_mode() const;
