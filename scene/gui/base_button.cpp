@@ -214,6 +214,17 @@ bool BaseButton::is_disabled() const {
 	return status.disabled;
 }
 
+void BaseButton::set_enable_hover_pressed(bool p_on) {
+	enable_hover_pressed = p_on;
+	if(is_pressed()) {
+		queue_redraw();
+	}
+}
+
+bool BaseButton::is_enable_hover_pressed() const {
+	return enable_hover_pressed;
+}
+
 void BaseButton::set_pressed(bool p_pressed) {
 	bool prev_pressed = status.pressed;
 	set_pressed_no_signal(p_pressed);
@@ -283,8 +294,14 @@ BaseButton::DrawMode BaseButton::get_draw_mode() const {
 		}
 
 		if (pressing) {
+			if(enable_hover_pressed && status.hovering) {
+				return DRAW_HOVER_PRESSED;
+			}
 			return DRAW_PRESSED;
 		} else {
+			if(status.hovering) {
+				return DRAW_HOVER;
+			}
 			return DRAW_NORMAL;
 		}
 	}
@@ -450,6 +467,8 @@ void BaseButton::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_shortcut_in_tooltip_enabled"), &BaseButton::is_shortcut_in_tooltip_enabled);
 	ClassDB::bind_method(D_METHOD("set_disabled", "disabled"), &BaseButton::set_disabled);
 	ClassDB::bind_method(D_METHOD("is_disabled"), &BaseButton::is_disabled);
+	ClassDB::bind_method(D_METHOD("set_enable_hover_pressed", "enabled"), &BaseButton::set_enable_hover_pressed);
+	ClassDB::bind_method(D_METHOD("is_enable_hover_pressed"), &BaseButton::is_enable_hover_pressed);
 	ClassDB::bind_method(D_METHOD("set_action_mode", "mode"), &BaseButton::set_action_mode);
 	ClassDB::bind_method(D_METHOD("get_action_mode"), &BaseButton::get_action_mode);
 	ClassDB::bind_method(D_METHOD("set_button_mask", "mask"), &BaseButton::set_button_mask);
@@ -476,6 +495,7 @@ void BaseButton::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "disabled"), "set_disabled", "is_disabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "toggle_mode"), "set_toggle_mode", "is_toggle_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "enable_hover_pressed"), "set_enable_hover_pressed", "is_enable_hover_pressed");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "button_pressed"), "set_pressed", "is_pressed");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "action_mode", PROPERTY_HINT_ENUM, "Button Press,Button Release"), "set_action_mode", "get_action_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "button_mask", PROPERTY_HINT_FLAGS, "Mouse Left, Mouse Right, Mouse Middle"), "set_button_mask", "get_button_mask");
