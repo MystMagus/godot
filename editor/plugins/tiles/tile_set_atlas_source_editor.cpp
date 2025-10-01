@@ -652,6 +652,36 @@ void TileSetAtlasSourceEditor::_update_tile_data_editors() {
 	// --- Rendering ---
 	ADD_TILE_DATA_EDITOR_GROUP(TTR("Rendering"));
 
+	ADD_TILE_DATA_EDITOR(group, TTR("Flip H"), "flip_h");
+	if (!tile_data_editors.has("flip_h")) {
+		TileDataDefaultEditor *tile_data_flip_h_editor = memnew(TileDataDefaultEditor());
+		tile_data_flip_h_editor->hide();
+		tile_data_flip_h_editor->setup_property_editor(Variant::BOOL, "flip_h");
+		tile_data_flip_h_editor->connect("needs_redraw", callable_mp((CanvasItem *)tile_atlas_control_unscaled, &Control::queue_redraw));
+		tile_data_flip_h_editor->connect("needs_redraw", callable_mp((CanvasItem *)alternative_tiles_control_unscaled, &Control::queue_redraw));
+		tile_data_editors["flip_h"] = tile_data_flip_h_editor;
+	}
+
+	ADD_TILE_DATA_EDITOR(group, TTR("Flip V"), "flip_v");
+	if (!tile_data_editors.has("flip_v")) {
+		TileDataDefaultEditor *tile_data_flip_v_editor = memnew(TileDataDefaultEditor());
+		tile_data_flip_v_editor->hide();
+		tile_data_flip_v_editor->setup_property_editor(Variant::BOOL, "flip_v");
+		tile_data_flip_v_editor->connect("needs_redraw", callable_mp((CanvasItem *)tile_atlas_control_unscaled, &Control::queue_redraw));
+		tile_data_flip_v_editor->connect("needs_redraw", callable_mp((CanvasItem *)alternative_tiles_control_unscaled, &Control::queue_redraw));
+		tile_data_editors["flip_v"] = tile_data_flip_v_editor;
+	}
+
+	ADD_TILE_DATA_EDITOR(group, TTR("Transpose"), "transpose");
+	if (!tile_data_editors.has("transpose")) {
+		TileDataDefaultEditor *tile_data_transpose_editor = memnew(TileDataDefaultEditor());
+		tile_data_transpose_editor->hide();
+		tile_data_transpose_editor->setup_property_editor(Variant::BOOL, "transpose");
+		tile_data_transpose_editor->connect("needs_redraw", callable_mp((CanvasItem *)tile_atlas_control_unscaled, &Control::queue_redraw));
+		tile_data_transpose_editor->connect("needs_redraw", callable_mp((CanvasItem *)alternative_tiles_control_unscaled, &Control::queue_redraw));
+		tile_data_editors["transpose"] = tile_data_transpose_editor;
+	}
+
 	ADD_TILE_DATA_EDITOR(group, TTR("Texture Origin"), "texture_origin");
 	if (!tile_data_editors.has("texture_origin")) {
 		TileDataTextureOriginEditor *tile_data_texture_origin_editor = memnew(TileDataTextureOriginEditor);
