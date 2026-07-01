@@ -1130,45 +1130,23 @@ float InputEventJoypadMotion::get_axis_value() const {
 	return axis_value;
 }
 
-void InputEventJoypadMotion::set_axis_last_value(float p_value) {
-
-	axis_last_value = p_value;
-}
-
-float InputEventJoypadMotion::get_axis_last_value() const {
-
-	return axis_last_value;
-}
-
-/*bool InputEventJoypadMotion::is_pressed() const {
-	return Math::abs(axis_value) >= 0.5f;
-}*/
-
-bool InputEventJoypadMotion::is_echo() const {
-	return Math::abs(axis_last_value) >= 0.5f;
-}
-
 bool InputEventJoypadMotion::action_match(const Ref<InputEvent> &p_event, bool p_exact_match, float p_deadzone, bool *r_pressed, float *r_strength, float *r_raw_strength) const {
 	Ref<InputEventJoypadMotion> jm = p_event;
 	if (jm.is_null()) {
 		return false;
 	}
 
+	// Matches even if not in the same direction, but returns a "not pressed" event.
 	bool match = axis == jm->axis;
 	if (p_exact_match) {
 		match &= (axis_value < 0) == (jm->axis_value < 0);
 	}
 	if (match) {
 		float jm_abs_axis_value = Math::abs(jm->get_axis_value());
-		bool same_direction = (((axis_value < 0) == (jm->axis_value < 0)) || (axis_value != 0 && jm->axis_value == 0));
-		if(!same_direction)
-			return false;
+		bool same_direction = (((axis_value < 0) == (jm->axis_value < 0)) || jm->axis_value == 0);
 		bool pressed_state = same_direction && jm_abs_axis_value >= p_deadzone;
 		if (r_pressed != nullptr) {
 			*r_pressed = pressed_state;
-		}
-		if(!pressed && Math::abs(jm->get_axis_last_value()) < p_deadzone) {
-			return false;
 		}
 		if (r_strength != nullptr) {
 			if (pressed_state) {
